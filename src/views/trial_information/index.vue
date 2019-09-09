@@ -38,7 +38,7 @@
         <el-input v-model="form.case_num" />
       </el-form-item>
     </el-form>
-    <el-button icon="el-icon-search" circle @click="getData"></el-button>
+    <el-button icon="el-icon-search" circle @click="getData" />
   </div>
 </template>
 
