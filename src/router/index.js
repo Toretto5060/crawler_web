@@ -18,12 +18,6 @@ export const constantRoutes = [
       meta: { title: '概况', icon: 'dashboard' }
     }]
   },
-
-  {
-    path: '/404',
-    component: () => import('@/views/404'),
-    hidden: true
-  },
   {
     path: '/court',
     component: Layout,
@@ -40,29 +34,13 @@ export const constantRoutes = [
       }
     ]
   },
+  {
+    path: '/404',
+    component: () => import('@/views/404'),
+    hidden: true
+  },
   // {
-  //   path: '/example',
-  //   component: Layout,
-  //   redirect: '/example/table',
-  //   name: 'Example',
-  //   meta: { title: 'Example', icon: 'example' },
-  //   children: [
-  //     {
-  //       path: 'table',
-  //       name: 'Table',
-  //       component: () => import('@/views/table/index'),
-  //       meta: { title: 'Table', icon: 'table' }
-  //     },
-  //     {
-  //       path: 'tree',
-  //       name: 'Tree',
-  //       component: () => import('@/views/tree/index'),
-  //       meta: { title: 'Tree', icon: 'tree' }
-  //     }
-  //   ]
-  // },
-  // {
-  //   path: '/form',
+  //   path: '/',
   //   component: Layout,
   //   children: [
   //     {
