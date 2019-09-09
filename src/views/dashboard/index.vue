@@ -1,5 +1,5 @@
 <template>
-  <div class="dashboard">
+  <div id="dashboard">
     正在开发中...
   </div>
 </template>
@@ -7,7 +7,7 @@
 <script>
 
 export default {
-  name: 'dashboard',
+  name: 'Dashboard',
   computed: {
 
   }
@@ -15,7 +15,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.dashboard {
+#dashboard {
   margin: 30px;
 }
 </style>
