@@ -65,7 +65,7 @@
         height=680
       >
         <el-table-column
-          v-for="(item,index) in tableTitle"
+          v-for="(item,index) in tableTitle" :key="index"
           :prop=item.prop
           :label=item.label
           :width=item.width
