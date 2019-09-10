@@ -1,44 +1,81 @@
 <template>
   <div class="information">
-    <el-form ref="form" :model="form">
-      <el-form-item label="开庭日期">
-        <el-date-picker
-          v-model="date"
-          type="daterange"
-          align="right"
-          unlink-panels
-          range-separator="至"
-          start-placeholder="开始日期"
-          end-placeholder="结束日期"
-          :picker-options="pickerOptions"
-          value-format="yyyy-MM-dd"
-          @change="isChange"
-        />
-      </el-form-item>
-      <el-form-item label="法院">
-        <el-select v-model="selectItems" placeholder="" @change="selectItem">
-          <el-option
-            v-for="item in options"
-            :key="item.value"
-            :label="item.label"
-            :value="item.value"
+    <div class="titles">
+      <el-form ref="form" :model="form">
+        <el-form-item label="开庭日期">
+          <el-date-picker
+           :clearable="false"
+            v-model="date"
+            type="daterange"
+            align="right"
+            unlink-panels
+            range-separator="至"
+            start-placeholder="开始日期"
+            end-placeholder="结束日期"
+            :picker-options="pickerOptions"
+            value-format="yyyy-MM-dd"
+            @change="isChange"
           />
-        </el-select>
-      </el-form-item>
-      <el-form-item label="审判长">
-        <el-input v-model="form.presiding_judge" />
-      </el-form-item>
-      <el-form-item label="原告">
-        <el-input v-model="form.plaintiff" />
-      </el-form-item>
-      <el-form-item label="被告">
-        <el-input v-model="form.defendant" />
-      </el-form-item>
-      <el-form-item label="案号">
-        <el-input v-model="form.case_num" />
-      </el-form-item>
-    </el-form>
-    <el-button icon="el-icon-search" circle @click="getData" />
+        </el-form-item>
+        <el-form-item label="法院">
+          <el-select v-model="selectItems" placeholder="" @change="selectItem">
+            <el-option
+              v-for="item in options"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="审判长">
+          <el-input v-model="form.presiding_judge" clearable />
+        </el-form-item>
+        <el-form-item label="原告">
+          <el-input v-model="form.plaintiff" clearable />
+        </el-form-item>
+        <el-form-item label="被告">
+          <el-input v-model="form.defendant" clearable />
+        </el-form-item>
+        <el-form-item label="案号">
+          <el-input v-model="form.case_num" clearable />
+        </el-form-item>
+      </el-form>
+      <el-button style="float:left;margin-left:1rem" :disabled="btnDisabled" :loading="btnLoading" icon="el-icon-search" circle @click="getData" />
+    </div>
+    <div class="textCont">
+      <div class="attention">
+        <div class="textTop">
+          <span>* </span>
+          <div class="statement">数据来源:<a href="http://www.hshfy.sh.cn/shfy/gweb2017/ktgg_search.jsp?zd=splc" target="_Blank">上海市高级人民法院 → 开庭公告</a></div>
+        </div>
+        <div class="textBom">
+          <div class="text">共有{{allCourtNum}}条数据</div>
+          <div v-if="selectShow">&nbsp;&nbsp;&nbsp;查询到{{selectCourtNum}}条数据</div>
+        </div>
+      </div>
+    </div>
+    <div class="tables">
+      <el-table
+        v-loading="tableLoading"
+        element-loading-text="资源正在打包中,请稍后"
+        element-loading-spinner="el-icon-loading"
+        element-loading-background="rgba(0, 0, 0, 0.2)"
+        :data="tableData"
+        style="width:54.69rem;"
+        height=680
+      >
+        <el-table-column
+          v-for="(item,index) in tableTitle"
+          :prop=item.prop
+          :label=item.label
+          :width=item.width
+        />
+      </el-table>
+      <div class="statement">
+        <p>表格数据用于核对数据，默认显示30条数据;数据顺序可能与官网略有不同，请核对后下载!</p>
+        <p>暂不支持查询下载日期内全部数据，即<span>法院信息、审判长、原告、被告、案号</span>必填其一。</p>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -82,19 +119,102 @@ export default {
         presiding_judge: '',
         plaintiff: '',
         defendant: '',
-        case_num: ''
+        case_num: '',
+        init:true
       },
       options: [{
         value: '',
         label: '全部'
       }],
-      selectItems: ''
+      selectItems: '',
+      tableTitle:[{
+        label:'法院',
+        prop:'court',
+        width:'50'
+      },{
+        label:'法庭',
+        prop:'the_court',
+        width:'100'
+      },{
+        label:'开庭日期',
+        prop:'trial_date',
+        width:'90'
+      },{
+        label:'案号',
+        prop:'case_num',
+        width:'140'
+      },{
+        label:'案由',
+        prop:'cause_action',
+        width:'95'
+      },{
+        label:'承办部门',
+        prop:'department',
+        width:'100'
+      },{
+        label:'审判长/主审人',
+        prop:'presiding_judge',
+        width:'100'
+      },{
+        label:'原告/上诉人',
+        prop:'plaintiff',
+        width:'100'
+      },{
+        label:'被告/被上诉人',
+        prop:'defendant',
+        width:'100'
+      },],
+      tableData:[],
+      tableLoading:false,
+      btnLoading:false,
+      allCourtNum:'',
+      selectCourtNum:'',
+      selectShow:false,
+      btnDisabled:true
     }
   },
   created() {
   },
+  watch: {
+    'form.court'(){
+      if (this.isEmpty()) {
+        this.btnDisabled = false
+      } else {
+        this.btnDisabled = true
+      }
+    },
+    'form.presiding_judge'(){
+      if (this.isEmpty()) {
+        this.btnDisabled = false
+      } else {
+        this.btnDisabled = true
+      }
+    },
+    'form.plaintiff'(){
+      if (this.isEmpty()) {
+        this.btnDisabled = false
+      } else {
+        this.btnDisabled = true
+      }
+    },
+    'form.defendant'(){
+      if (this.isEmpty()) {
+        this.btnDisabled = false
+      } else {
+        this.btnDisabled = true
+      }
+    },
+    'form.case_num'(){
+      if (this.isEmpty()) {
+        this.btnDisabled = false
+      } else {
+        this.btnDisabled = true
+      }
+    }
+  },
   mounted() {
-    this.setDefault()
+    this.setDefault();
+    this.getData();
   },
   methods: {
     /**
@@ -122,8 +242,24 @@ export default {
           }
           this.options = newArr
           this.selectItems = this.options[0].value
+          this.allCourtNum = res.data.total
         }
       })
+    },
+    isEmpty() {
+      let thisItem = false;
+      this.form.presiding_judge = (this.form.presiding_judge).replace(/\s*/g,"")
+      this.form.plaintiff = (this.form.plaintiff).replace(/\s*/g,"")
+      this.form.defendant = (this.form.defendant).replace(/\s*/g,"")
+      this.form.case_num = (this.form.case_num).replace(/\s*/g,"")
+      for (let i in this.form) {
+        if (i != 'startDate' && i != 'endDate' && i != 'init' && this.form[i].indexOf(' ') == -1) {
+          if (this.form[i].length > 0) {
+              thisItem = true
+          }
+        }
+      }
+      return thisItem;
     },
     isChange(data) {
       this.form.startDate = data[0]
@@ -133,8 +269,33 @@ export default {
       this.form.court = this.selectItems
     },
     getData() {
+      this.tableLoading = true
+      this.btnLoading = true
+      this.tableData = []
       getCourtSh(this.form).then((res) => {
-        console.log(res)
+        if (res.code == 0) {
+          this.tableLoading = false
+          this.btnLoading = false
+          const dataList = res.data
+          for (let j in dataList) {
+            if (j < 30) {
+              let obj = {}
+              for (let i in this.tableTitle) {
+                obj[this.tableTitle[i].prop] = dataList[j][this.tableTitle[i].prop]
+              }
+              this.tableData.push(obj)
+            } 
+          }
+          if (!this.form.init) {
+            this.selectShow = true;
+            this.selectCourtNum = res.data.length
+          }
+        }
+        this.form.init = false;
+      }).catch((err) => {
+        console.log(err)
+        this.tableLoading = false
+        this.btnLoading = false
       })
     }
   }
@@ -143,12 +304,149 @@ export default {
 <style lang="less" scoped>
   .information{
     padding: 20px;
+    .titles {
+      width: 100%;
+      float: left;
+      // min-height: 5rem;
+    }
+    .textCont {
+      width: 100%;
+      height: 3rem;
+      float: left;
+      font-size: 14px;
+      color: #888;
+      .attention {
+        height: 3rem;
+        .statement {
+          margin-left: 0.6rem;
+        }
+        span {
+          float: left;
+          color:red;
+          line-height: 1.3rem
+        }
+        .textTop {
+          height: 1.5rem;
+          line-height: 1rem;
+          a {
+            color: #4682B4
+          }
+        }
+        .textBom {
+          height: 2rem;
+          div {
+            float: left;
+          }
+        }
+      }
+    }
+    .tables {
+      width:100%;
+      float: left;
+      position: relative;
+      .statement {
+        color: #888;
+        width: 12rem;
+        position: absolute;
+        top: 1rem;
+        left: 60rem;
+        font-size: 14px;
+        p {
+          text-indent:1em;
+          padding: 0;
+          margin: 0;
+          padding-bottom: 0.5rem;
+          span {
+            color: red;
+          }
+        }
+      }
+    }
   }
 </style>
 <style lang="less">
   .information{
     .el-range-input:nth-child(4) {
       margin-left: 12px;
+    }
+    .el-form-item__content {
+      font-size: 16px;
+    }
+    .el-form {
+      width: 100%;
+      height: 100%;
+    }
+    .el-form-item {
+      float: left;
+    }
+    .el-form-item:nth-child(1) {
+      width: 22rem;
+      .el-form-item__label {
+        width: 4.6rem;
+        text-align: left;
+      }
+      .el-date-editor,.el-range-editor,.el-input__inner,.el-date-editor--daterange {
+        width: 16rem;
+      }
+    }
+    .el-form-item:nth-child(2) {
+      width: 9rem;
+      .el-form-item__label {
+        width: 2.6rem;
+        text-align: left;
+      }
+      .el-date-editor,.el-range-editor,.el-input__inner,.el-date-editor--daterange {
+        width: 5rem;
+      }
+    }
+    .el-form-item:nth-child(3) {
+      width: 10.5rem;
+      .el-form-item__label {
+        width: 3.6rem;
+        text-align: left;
+      }
+      .el-form-item__content {
+        width: 5.7rem;
+        float: left;
+      }
+    }
+
+    .el-form-item:nth-child(4) {
+      width: 9.6rem;
+      .el-form-item__label {
+        width: 2.6rem;
+        text-align: left;
+      }
+      .el-form-item__content {
+        width: 5.7rem;
+        float: left;
+      }
+    }
+    .el-form-item:nth-child(5) {
+      width: 9.6rem;
+      float: left;
+      .el-form-item__label {
+        width: 2.6rem;
+        text-align: left;
+      }
+      .el-form-item__content {
+        width: 5.7rem;
+        float: left;
+      }
+    }
+    .el-form-item:nth-child(6) {
+      width: 10rem;
+      .el-form-item__label {
+        width: 2.6rem;
+        text-align: left;
+      }
+      .el-form-item__content {
+        width: 7rem;
+        float: left;
+      }
+    }
+    .el-table {
+      font-size: 12px;
     }
   }
 </style>
