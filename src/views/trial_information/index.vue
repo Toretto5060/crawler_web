@@ -1,81 +1,89 @@
 <template>
   <div class="information">
-    <div class="titles">
-      <el-form ref="form" :model="form">
-        <el-form-item label="开庭日期">
-          <el-date-picker
-           :clearable="false"
-            v-model="date"
-            type="daterange"
-            align="right"
-            unlink-panels
-            range-separator="至"
-            start-placeholder="开始日期"
-            end-placeholder="结束日期"
-            :picker-options="pickerOptions"
-            value-format="yyyy-MM-dd"
-            @change="isChange"
-          />
-        </el-form-item>
-        <el-form-item label="法院">
-          <el-select v-model="selectItems" placeholder="" @change="selectItem">
-            <el-option
-              v-for="item in options"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value"
-            />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="审判长">
-          <el-input v-model="form.presiding_judge" clearable />
-        </el-form-item>
-        <el-form-item label="原告">
-          <el-input v-model="form.plaintiff" clearable />
-        </el-form-item>
-        <el-form-item label="被告">
-          <el-input v-model="form.defendant" clearable />
-        </el-form-item>
-        <el-form-item label="案号">
-          <el-input v-model="form.case_num" clearable />
-        </el-form-item>
-      </el-form>
-      <el-button style="float:left;margin-left:1rem" :disabled="btnDisabled" :loading="btnLoading" icon="el-icon-search" circle @click="getData" />
-    </div>
-    <div class="textCont">
-      <div class="attention">
-        <div class="textTop">
-          <span>* </span>
-          <div class="statement">数据来源:<a href="http://www.hshfy.sh.cn/shfy/gweb2017/ktgg_search.jsp?zd=splc" target="_Blank">上海市高级人民法院 → 开庭公告</a></div>
-        </div>
-        <div class="textBom">
-          <div class="text">共有{{allCourtNum}}条数据</div>
-          <div v-if="selectShow">&nbsp;&nbsp;&nbsp;查询到{{selectCourtNum}}条数据</div>
-        </div>
-      </div>
-    </div>
-    <div class="tables">
-      <el-table
-        v-loading="tableLoading"
-        element-loading-text="资源正在打包中,请稍后"
+    <el-row
+     v-loading="tableLoading"
+        :element-loading-text="loadingText"
         element-loading-spinner="el-icon-loading"
-        element-loading-background="rgba(0, 0, 0, 0.2)"
-        :data="tableData"
-        style="width:54.69rem;"
-        height=680
-      >
-        <el-table-column
-          v-for="(item,index) in tableTitle" :key="index"
-          :prop=item.prop
-          :label=item.label
-          :width=item.width
-        />
-      </el-table>
-      <div class="statement">
-        <p>表格数据用于核对数据，默认显示30条数据;数据顺序可能与官网略有不同，请核对后下载!</p>
-        <p>暂不支持查询下载日期内全部数据，即<span>法院信息、审判长、原告、被告、案号</span>必填其一。</p>
+        element-loading-background="rgba(255, 255, 255, 0.4)"
+    > 
+      <div class="cont">
+        <div class="titles">
+          <el-form ref="form" :model="form">
+            <el-form-item label="开庭日期">
+              <el-date-picker
+              :clearable="false"
+                v-model="date"
+                type="daterange"
+                align="right"
+                unlink-panels
+                range-separator="至"
+                start-placeholder="开始日期"
+                end-placeholder="结束日期"
+                :picker-options="pickerOptions"
+                value-format="yyyy-MM-dd"
+                @change="isChange"
+              />
+            </el-form-item>
+            <el-form-item label="法院">
+              <el-select v-model="selectItems" placeholder="" @change="selectItem">
+                <el-option
+                  v-for="item in options"
+                  :key="item.value"
+                  :label="item.label"
+                  :value="item.value"
+                />
+              </el-select>
+            </el-form-item>
+            <el-form-item label="审判长">
+              <el-input v-model="form.presiding_judge" clearable />
+            </el-form-item>
+            <el-form-item label="原告">
+              <el-input v-model="form.plaintiff" clearable />
+            </el-form-item>
+            <el-form-item label="被告">
+              <el-input v-model="form.defendant" clearable />
+            </el-form-item>
+            <el-form-item label="案号">
+              <el-input v-model="form.case_num" clearable />
+            </el-form-item>
+          </el-form>
+          <el-button style="float:left;margin-left:1rem" :disabled="btnDisabled" :loading="btnLoading" icon="el-icon-search" circle @click="getData" />
+        </div>
+        <div class="textCont">
+          <div class="attention">
+            <div class="textTop">
+              <span>* </span>
+              <div class="statement">数据来源:<a href="http://www.hshfy.sh.cn/shfy/gweb2017/ktgg_search.jsp?zd=splc" target="_Blank">上海市高级人民法院 → 开庭公告</a></div>
+            </div>
+            <div class="textBom">
+              <div class="text">共有{{allCourtNum}}条数据</div>
+              <div v-if="selectShow">&nbsp;&nbsp;&nbsp;查询到{{selectCourtNum}}条数据</div>
+            </div>
+          </div>
+        </div>
+        <div class="downLoad">
+          <el-button v-if="downLoadShow" type="success" icon="el-icon-download" round>下载excel</el-button>
+        </div>
+        <div class="tables">
+          <el-table
+            :data="tableData"
+            style="width:54.69rem;"
+            height=680
+          >
+            <el-table-column
+              v-for="(item,index) in tableTitle" :key="index"
+              :prop=item.prop
+              :label=item.label
+              :width=item.width
+            />
+          </el-table>
+          <div class="statement">
+            <p>表格数据用于核对数据，默认显示30条数据;数据顺序可能与官网略有不同，请核对后下载!</p>
+            <p>暂不支持查询下载日期内全部数据，即<span>法院信息、审判长、原告、被告、案号</span>必填其一。</p>
+          </div>
+        </div>
       </div>
-    </div>
+    </el-row>
   </div>
 </template>
 
@@ -160,17 +168,22 @@ export default {
         prop:'plaintiff',
         width:'100'
       },{
-        label:'被告/被上诉人',
-        prop:'defendant',
-        width:'100'
+        label: '被告/被上诉人',
+        prop: 'defendant',
+        width: '100'
       },],
       tableData:[],
-      tableLoading:false,
-      btnLoading:false,
-      allCourtNum:'',
-      selectCourtNum:'',
-      selectShow:false,
-      btnDisabled:true
+      tableLoading: false,
+      btnLoading: false,
+      allCourtNum: '',
+      selectCourtNum: '',
+      selectShow: false,
+      btnDisabled: true,
+      downLoadShow: false,
+      loadingText: '',
+      workbook: '',
+      worksheet: ''
+
     }
   },
   created() {
@@ -182,6 +195,7 @@ export default {
       } else {
         this.btnDisabled = true
       }
+      this.downLoadShow = false
     },
     'form.presiding_judge'(){
       if (this.isEmpty()) {
@@ -189,6 +203,7 @@ export default {
       } else {
         this.btnDisabled = true
       }
+      this.downLoadShow = false
     },
     'form.plaintiff'(){
       if (this.isEmpty()) {
@@ -196,6 +211,7 @@ export default {
       } else {
         this.btnDisabled = true
       }
+      this.downLoadShow = false
     },
     'form.defendant'(){
       if (this.isEmpty()) {
@@ -203,6 +219,7 @@ export default {
       } else {
         this.btnDisabled = true
       }
+      this.downLoadShow = false
     },
     'form.case_num'(){
       if (this.isEmpty()) {
@@ -210,6 +227,7 @@ export default {
       } else {
         this.btnDisabled = true
       }
+      this.downLoadShow = false
     },
     'date'() {
       let startDate = this.date[0].split('-')
@@ -284,100 +302,161 @@ export default {
       this.tableLoading = true
       this.btnLoading = true
       this.tableData = []
+      this.selectCourtNum = 0
+      if (this.form.init) {
+        this.loadingText = "数据正在赶来，请稍后"
+      } else {
+        this.loadingText = "资源正在打包，请稍后"
+      }
       getCourtSh(this.form).then((res) => {
         if (res.code == 0) {
           this.tableLoading = false
+          this.btnDisabled = true    // 筛选完成，查询不可点击
           this.btnLoading = false
           const dataList = res.data
-          for (let j in dataList) {
-            if (j < 30) {
-              let obj = {}
-              for (let i in this.tableTitle) {
-                obj[this.tableTitle[i].prop] = dataList[j][this.tableTitle[i].prop]
+          if (dataList.length > 0) {
+            for (let j in dataList) {
+              if (j < 30) {
+                let obj = {}
+                for (let i in this.tableTitle) {
+                  obj[this.tableTitle[i].prop] = dataList[j][this.tableTitle[i].prop]
+                }
+                this.tableData.push(obj)
+              } 
+            }
+            if (!this.form.init) {
+              this.selectShow = true;
+              this.selectCourtNum = res.data.length
+              this.downLoadShow = true
+              this.$notify({
+                title: '数据打包成功',
+                message: '下载excel请核对数据是否正确',
+                type: 'success'
+              });
+              // 处理成exceljs需要数据格式
+              /**
+               * 写入头部
+               */
+              let setWidth = [11,16.5,27,22,8.5,8.5,8.5,8.5,8.5];
+              let titleList = []
+              for (let x in this.tableTitle) {
+                let obj = {
+                  header: this.tableTitle[x].label,
+                  key: this.tableTitle[x].label, 
+                  width: setWidth[x] 
+                }
+                titleList.push(obj)
               }
-              this.tableData.push(obj)
-            } 
+              // this.worksheet.columns = titleList;
+
+              for (let x=0; x<res.data.length; x++) {
+                let rowData = []
+                for (let y in res.data[x]) {
+                  rowData.push(res.data[x][y])
+                }
+                let rowObj = {}
+                for (let z in rowData) {
+                  let attributeName = this.tableTitle[z].label
+                  rowObj[attributeName] = rowData[z]
+                }
+                // this.worksheet.addRow(rowObj)
+              }
+
+            }
+          } else {
+            this.downLoadShow = false;
           }
-          if (!this.form.init) {
-            this.selectShow = true;
-            this.selectCourtNum = res.data.length
-          }
+          this.form.init = false;          
         }
-        this.form.init = false;
       }).catch((err) => {
-        console.log(err)
         this.tableLoading = false
         this.btnLoading = false
       })
-    }
+    },
   }
 }
 </script>
 <style lang="less" scoped>
   .information{
-    padding: 20px;
-    .titles {
-      width: 100%;
-      float: left;
-      // min-height: 5rem;
-    }
-    .textCont {
-      width: 100%;
-      height: 3rem;
-      float: left;
-      font-size: 14px;
-      color: #888;
-      .attention {
+    // padding: 20px;
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    .cont {
+      padding: 20px;
+      .titles {
+        width: 100%;
+        float: left;
+        // min-height: 5rem;
+      }
+      .textCont {
+        width: 20rem;
         height: 3rem;
-        .statement {
-          margin-left: 0.6rem;
-        }
-        span {
-          float: left;
-          color:red;
-          line-height: 1.3rem
-        }
-        .textTop {
-          height: 1.5rem;
-          line-height: 1rem;
-          a {
-            color: #4682B4
-          }
-        }
-        .textBom {
-          height: 2rem;
-          div {
-            float: left;
-          }
-        }
-      }
-    }
-    .tables {
-      width:100%;
-      float: left;
-      position: relative;
-      .statement {
-        color: #888;
-        width: 12rem;
-        position: absolute;
-        top: 1rem;
-        left: 60rem;
+        float: left;
         font-size: 14px;
-        p {
-          text-indent:1em;
-          padding: 0;
-          margin: 0;
-          padding-bottom: 0.5rem;
+        color: #888;
+        .attention {
+          height: 3rem;
+          .statement {
+            margin-left: 0.6rem;
+          }
           span {
-            color: red;
+            float: left;
+            color:red;
+            line-height: 1.3rem
+          }
+          .textTop {
+            height: 1.5rem;
+            line-height: 1rem;
+            a {
+              color: #4682B4
+            }
+          }
+          .textBom {
+            height: 2rem;
+            div {
+              float: left;
+            }
+          }
+        }
+      }
+      .downLoad{
+        float: left;
+      }
+      .tables {
+        width:100%;
+        float: left;
+        position: relative;
+        .statement {
+          color: #888;
+          width: 12rem;
+          position: absolute;
+          top: 1rem;
+          left: 60rem;
+          font-size: 14px;
+          p {
+            text-indent:1em;
+            padding: 0;
+            margin: 0;
+            padding-bottom: 0.5rem;
+            span {
+              color: red;
+            }
           }
         }
       }
     }
+    
   }
 </style>
 <style lang="less">
   .information{
+    .el-row {
+      width: 100%;
+      height: 100%;
+    }
     .el-range-input:nth-child(4) {
       margin-left: 12px;
     }
