@@ -210,6 +210,18 @@ export default {
       } else {
         this.btnDisabled = true
       }
+    },
+    'date'() {
+      let startDate = this.date[0].split('-')
+      let endDate = this.date[1].split('-')
+      if (!this.fuc.checkTime(this.date[0],this.date[1],3)) {
+        this.$notify({
+          title: '时间范围过长',
+          message: '为了良好体验，时间筛选范围每次最多三个月，已为你设置最大值',
+          type: 'error'
+        });
+        this.date[1] = this.fuc.getNextMouth(3)
+      }
     }
   },
   mounted() {
@@ -222,8 +234,8 @@ export default {
      */
     setDefault() {
       const today = this.fuc.getNowFormatDate()
-      const splitToday = this.fuc.getNowFormatDate().split('-')
-      const nextMonth = splitToday[0] + '-' + ((Number(splitToday[1]) + 1) > 9 ? (Number(splitToday[1]) + 1) : '0' + (Number(splitToday[1]) + 1)) + '-' + splitToday[2]
+      const splitToday = this.fuc.getNowFormatDate().split('-');
+      let nextMonth = this.fuc.getNextMouth(1)
       this.date = [today, nextMonth]
       this.form.startDate = this.date[0]
       this.form.endDate = this.date[1]
