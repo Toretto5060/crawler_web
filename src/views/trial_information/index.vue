@@ -5,7 +5,7 @@
         :element-loading-text="loadingText"
         element-loading-spinner="el-icon-loading"
         element-loading-background="rgba(255, 255, 255, 0.4)"
-    > 
+    >
       <div class="cont">
         <div class="titles">
           <el-form ref="form" :model="form">
@@ -62,7 +62,7 @@
           </div>
         </div>
         <div class="downLoad">
-          <el-button v-if="downLoadShow" type="success" icon="el-icon-download" round>下载excel</el-button>
+          <el-button v-if="downLoadShow" @click="downLoad"  type="success" icon="el-icon-download" round>下载excel</el-button>
         </div>
         <div class="tables">
           <el-table
@@ -88,7 +88,7 @@
 </template>
 
 <script>
-import { getCourtSh, getCourt } from '../../api/index'
+import {ip, getCourtSh, getCourt } from '../../api/index'
 export default {
   data() {
     return {
@@ -128,7 +128,8 @@ export default {
         plaintiff: '',
         defendant: '',
         case_num: '',
-        init:true
+        init:true,
+        // timestamp:''
       },
       options: [{
         value: '',
@@ -182,8 +183,8 @@ export default {
       downLoadShow: false,
       loadingText: '',
       workbook: '',
-      worksheet: ''
-
+      worksheet: '',
+      downLoadUrl:''
     }
   },
   created() {
@@ -283,7 +284,7 @@ export default {
       this.form.defendant = (this.form.defendant).replace(/\s*/g,"")
       this.form.case_num = (this.form.case_num).replace(/\s*/g,"")
       for (let i in this.form) {
-        if (i != 'startDate' && i != 'endDate' && i != 'init' && this.form[i].indexOf(' ') == -1) {
+        if (i != 'startDate' && i != 'endDate' && i != 'init' && i != 'timestamp' && this.form[i].indexOf(' ') == -1) {
           if (this.form[i].length > 0) {
               thisItem = true
           }
@@ -308,12 +309,13 @@ export default {
       } else {
         this.loadingText = "资源正在打包，请稍后"
       }
+      this.form.timestamp = Date.parse(new Date());
       getCourtSh(this.form).then((res) => {
         if (res.code == 0) {
           this.tableLoading = false
           this.btnDisabled = true    // 筛选完成，查询不可点击
           this.btnLoading = false
-          const dataList = res.data
+          const dataList = res.data.data
           if (dataList.length > 0) {
             for (let j in dataList) {
               if (j < 30) {
@@ -322,17 +324,18 @@ export default {
                   obj[this.tableTitle[i].prop] = dataList[j][this.tableTitle[i].prop]
                 }
                 this.tableData.push(obj)
-              } 
+              }
             }
             if (!this.form.init) {
               this.selectShow = true;
-              this.selectCourtNum = res.data.length
+              this.selectCourtNum = res.data.data.length
               this.downLoadShow = true
               this.$notify({
                 title: '数据打包成功',
                 message: '下载excel请核对数据是否正确',
                 type: 'success'
               });
+              this.downLoadUrl = ip + res.data.url
               // 处理成exceljs需要数据格式
               /**
                * 写入头部
@@ -342,17 +345,17 @@ export default {
               for (let x in this.tableTitle) {
                 let obj = {
                   header: this.tableTitle[x].label,
-                  key: this.tableTitle[x].label, 
-                  width: setWidth[x] 
+                  key: this.tableTitle[x].label,
+                  width: setWidth[x]
                 }
                 titleList.push(obj)
               }
               // this.worksheet.columns = titleList;
 
-              for (let x=0; x<res.data.length; x++) {
+              for (let x=0; x<res.data.data.length; x++) {
                 let rowData = []
-                for (let y in res.data[x]) {
-                  rowData.push(res.data[x][y])
+                for (let y in res.data.data[x]) {
+                  rowData.push(res.data.data[x][y])
                 }
                 let rowObj = {}
                 for (let z in rowData) {
@@ -366,13 +369,16 @@ export default {
           } else {
             this.downLoadShow = false;
           }
-          this.form.init = false;          
+          this.form.init = false;
         }
       }).catch((err) => {
         this.tableLoading = false
         this.btnLoading = false
       })
     },
+    downLoad() {
+      location.href = this.downLoadUrl
+    }
   }
 }
 </script>
@@ -448,7 +454,7 @@ export default {
         }
       }
     }
-    
+
   }
 </style>
 <style lang="less">

@@ -1,6 +1,7 @@
 import axios from './resouce'
 const host = process.env.VUE_APP_BASEURL
 
+export const ip = host
 // 获取法院信息及表中总长度
 export const getCourt = params => {
   return axios.get(host + '/getCourt', { params })
