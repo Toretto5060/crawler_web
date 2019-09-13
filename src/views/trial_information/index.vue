@@ -4,7 +4,7 @@
      v-loading="tableLoading"
         :element-loading-text="loadingText"
         element-loading-spinner="el-icon-loading"
-        element-loading-background="rgba(255, 255, 255, 0.4)"
+        element-loading-background="rgba(0, 0, 0, 0.2)"
     >
       <div class="cont">
         <div class="titles">
@@ -61,9 +61,12 @@
             </div>
           </div>
         </div>
-        <div class="downLoad">
+        <a :href="downLoadUrl" download="xlsx文件" v-if="downLoadShow">
+          <el-button  type="success" icon="el-icon-download" round>下载excel</el-button>
+        </a>
+        <!-- <div class="downLoad">
           <el-button v-if="downLoadShow" @click="downLoad"  type="success" icon="el-icon-download" round>下载excel</el-button>
-        </div>
+        </div> -->
         <div class="tables">
           <el-table
             :data="tableData"
@@ -77,10 +80,10 @@
               :width=item.width
             />
           </el-table>
-          <div class="statement">
+          <!-- <div class="statement">
             <p>表格数据用于核对数据，默认显示30条数据;数据顺序可能与官网略有不同，请核对后下载!</p>
             <p>暂不支持查询下载日期内全部数据，即<span>法院信息、审判长、原告、被告、案号</span>必填其一。</p>
-          </div>
+          </div> -->
         </div>
       </div>
     </el-row>
@@ -245,7 +248,7 @@ export default {
   },
   mounted() {
     this.setDefault();
-    this.getData();
+    this.getData();     
   },
   methods: {
     /**
@@ -307,7 +310,7 @@ export default {
       if (this.form.init) {
         this.loadingText = "数据正在赶来，请稍后"
       } else {
-        this.loadingText = "资源正在打包，请稍后"
+        this.loadingText = "资源较多，请耐心等待"
       }
       this.form.timestamp = Date.parse(new Date());
       getCourtSh(this.form).then((res) => {
@@ -330,11 +333,14 @@ export default {
               this.selectShow = true;
               this.selectCourtNum = res.data.data.length
               this.downLoadShow = true
-              this.$notify({
-                title: '数据打包成功',
-                message: '下载excel请核对数据是否正确',
-                type: 'success'
+
+              this.$message({
+                message: '数据打包成功，下载excel请核对数据是否正确',
+                type: 'success',
+                center: true,
+                duration:3500
               });
+
               this.downLoadUrl = ip + res.data.url
               // 处理成exceljs需要数据格式
               /**
@@ -364,7 +370,25 @@ export default {
                 }
                 // this.worksheet.addRow(rowObj)
               }
-
+            } else {
+                if (!localStorage.getItem('popAlert')) {
+                  setTimeout(()=>{
+                  this.$confirm('<div class="statement" style="text-align: center"><p style="text-indent:2em">表格数据用于核对数据，默认显示30条数据;数据顺序可能与官网略有不同，请核对后下载!</p><p style="text-indent:2em">暂不支持查询下载日期内全部数据，即<span style="color:red">法院信息、审判长、原告、被告、案号</span>必填其一。</p></div>', '提示', {
+                    confirmButtonText: '已阅',
+                    cancelButtonText: '不再弹出',
+                    type: 'warning',
+                    center: true,
+                    roundButton:true,
+                    closeOnClickModal:false,
+                    showClose:false,
+                    dangerouslyUseHTMLString: true
+                  }).then(() => {
+                    
+                  }).catch(() => {
+                    localStorage.setItem('popAlert',false)
+                  });
+                },1500)
+              }   
             }
           } else {
             this.downLoadShow = false;
@@ -435,23 +459,29 @@ export default {
         width:100%;
         float: left;
         position: relative;
-        .statement {
-          color: #888;
-          width: 12rem;
-          position: absolute;
-          top: 1rem;
-          left: 60rem;
-          font-size: 14px;
-          p {
-            text-indent:1em;
-            padding: 0;
-            margin: 0;
-            padding-bottom: 0.5rem;
-            span {
-              color: red;
-            }
-          }
+        .el-table {
+          float: left;
         }
+        // .statement {
+        //   color: #888;
+        //   width: 12rem;
+        //   float: left;
+        //   margin-left: 5rem;
+        //   margin: auto;
+        //   // position: absolute;
+        //   // top: 1rem;
+        //   // left: 60rem;
+        //   font-size: 14px;
+        //   p {
+        //     text-indent:1em;
+        //     padding: 0;
+        //     margin: 0;
+        //     padding-bottom: 0.5rem;
+        //     span {
+        //       color: red;
+        //     }
+        //   }
+        // }
       }
     }
 
@@ -462,6 +492,7 @@ export default {
     .el-row {
       width: 100%;
       height: 100%;
+      overflow: auto
     }
     .el-range-input:nth-child(4) {
       margin-left: 12px;
