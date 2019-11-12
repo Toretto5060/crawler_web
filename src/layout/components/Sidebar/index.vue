@@ -1,10 +1,5 @@
 <template>
-  <div :class="{'has-logo':showLogo}"
-   style="-webkit-user-select:none;
-          -moz-user-select:none;
-          -ms-user-select:none;
-          user-select:none;"
-    >
+  <div :class="{'has-logo':showLogo}">
     <logo v-if="showLogo" :collapse="isCollapse" />
     <el-scrollbar wrap-class="scrollbar-wrapper">
       <el-menu

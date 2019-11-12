@@ -1,7 +1,36 @@
 <template>
   <div class="navbar">
     <hamburger :is-active="sidebar.opened" class="hamburger-container" @toggleClick="toggleSideBar" />
+
     <breadcrumb class="breadcrumb-container" />
+
+    <div class="right-menu">
+      <el-dropdown class="avatar-container" trigger="click">
+        <div class="avatar-wrapper">
+          <img src="../../images/guests.gif" class="user-avatar">
+          <!-- <i class="el-icon-caret-bottom" /> -->
+        </div>
+
+        <!-- dropdown需配套使用，否则无论点哪里，都会报错 -->
+        
+        <el-dropdown-menu slot="dropdown" class="user-dropdown">
+          <!-- <router-link to="/">
+            <el-dropdown-item>
+              Home
+            </el-dropdown-item>
+          </router-link>
+          <a target="_blank" href="">
+            <el-dropdown-item>Github</el-dropdown-item>
+          </a>
+          <a target="_blank" href="">
+            <el-dropdown-item>Docs</el-dropdown-item>
+          </a>
+          <el-dropdown-item divided>
+            <span style="display:block;" @click="logout">Log Out</span>
+          </el-dropdown-item> -->
+        </el-dropdown-menu>
+      </el-dropdown>
+    </div>
   </div>
 </template>
 

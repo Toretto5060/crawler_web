@@ -61,7 +61,7 @@
             </div>
           </div>
         </div>
-        <a :href="downLoadUrl" download="xlsx文件" v-if="downLoadShow">
+        <a :href="downLoadUrl" download="file" v-if="downLoadShow">
           <el-button  type="success" icon="el-icon-download" round>下载excel</el-button>
         </a>
         <!-- <div class="downLoad">
@@ -408,12 +408,11 @@ export default {
 </script>
 <style lang="less" scoped>
   .information{
-    // padding: 20px;
     width: 100%;
     height: 100%;
-    position: absolute;
-    top: 0;
-    left: 0;
+    // position: absolute;
+    // top: 0;
+    // left: 0;
     .cont {
       padding: 20px;
       .titles {
